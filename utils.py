@@ -1,26 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 # Given a communication range, field size, and dimension d, calculates 
-# the number of agents such that the graph is connected with probability 1 - n^2
-def calculate_num_agents(communication_range, field_size, d):
+# the number of sensors such that the graph is connected with probability 1 - n^2
+def calculate_num_sensors(communication_range, field_size, d):
     norm_comm_range = communication_range / field_size
-    num_agents = 2
-    while norm_comm_range**d < 2*np.log(num_agents)/num_agents:
-        num_agents += 1
-    return num_agents
+    num_sensors = 2
+    while norm_comm_range**d < 2*np.log(num_sensors)/num_sensors:
+        num_sensors += 1
+    return num_sensors
 
 # Code adapted from the course "Probabilistic Sensor Fusion" 
 # Calculates the adjacency matrix, degree matrix, and Laplacian matrix of the graph
-def calculate_graph_matrices(agent_locations, communication_range):
-    num_agents = agent_locations.shape[1]
-    adjacency_matrix = np.zeros((num_agents, num_agents), dtype=int)
+def calculate_graph_matrices(sensor_locations, communication_range):
+    num_sensors = sensor_locations.shape[1]
+    adjacency_matrix = np.zeros((num_sensors, num_sensors), dtype=int)
 
-    for i in range(num_agents):
-        for j in range(num_agents):
+    for i in range(num_sensors):
+        for j in range(num_sensors):
             if i == j:
                 continue
-            distance = np.linalg.norm(agent_locations[:,i] - agent_locations[:,j])
+            distance = np.linalg.norm(sensor_locations[:,i] - sensor_locations[:,j])
             if distance <= communication_range:
                 adjacency_matrix[i,j] = 1
                 adjacency_matrix[j,i] = 1   
@@ -37,27 +39,60 @@ def is_graph_connected(laplacian_matrix):
     zero_eigenvalues = np.sum(np.isclose(eigenvalues, 0))
     return zero_eigenvalues == 1
 
+def get_field_function():
+    params_x = np.random.uniform(-1e-5, 1e-5, 3)
+    params_y = np.random.uniform(-2e-5, 2e-5, 3)
+    bias = np.random.uniform(18, 25)
+    def field_function(x, y):
+        x_term = params_x[0] * x**3 + params_x[1] * x**2 + params_x[2] * x
+        y_term = params_y[0] * y**3 + params_y[1] * y**2 + params_y[2] * y
+        return x_term + y_term + bias
+    return field_function
+
+def get_sensor_measurements(sensor_locations, field_function, noise_std):
+    vectorized_func = np.vectorize(field_function)
+    measurements = vectorized_func(sensor_locations[0, :], sensor_locations[1, :])
+    noise = np.random.normal(0, noise_std, size=measurements.shape)
+    return measurements + noise
+
 # Code adapted from the course "Probabilistic Sensor Fusion" 
-# Visualizes the graph of sensor agents in the field
-def visualize_graphs(agent_locations , adjacency_matrix):
+# Visualizes the graph of sensors in the field
+def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_values):
     """
     Visualizes the underlying graph
     """
-    num_agents = agent_locations.shape[1]
-    colors = plt.cm.get_cmap("tab10", num_agents)  # Use a colormap with N unique colors
+    num_sensors = sensor_locations.shape[1]
+    colors = plt.cm.get_cmap("tab10", num_sensors)  # Use a colormap with N unique colors
 
-    # Plot the agents
-    plt.figure(figsize=(6, 6))
-    for i in range(num_agents):
-        plt.scatter(agent_locations[0, i], agent_locations[1, i], marker = '.', s = 70, color='red')
+    fig = plt.figure(figsize=(6, 6))
+
+    # Plot the field values
+    x1_vals = np.linspace(0, 100, 100)
+    x2_vals = np.linspace(0, 100, 100)
+    X1, X2 = np.meshgrid(x1_vals, x2_vals)
+    Z = np.array([[field_function(x1, x2) for x1, x2 in zip(row_x1, row_x2)]
+              for row_x1, row_x2 in zip(X1, X2)])
+    field_plot = plt.contourf(X1, X2, Z, levels=100, cmap='plasma', alpha=0.5, antialiased=True)
 
     # Plot edges
-    for i in range(num_agents):
-        for j in range(i + 1, num_agents):
+    for i in range(num_sensors):
+        for j in range(i + 1, num_sensors):
             if adjacency_matrix[i, j] == 1:
-                plt.plot([agent_locations[0, i], agent_locations[0, j]],
-                         [agent_locations[1, i], agent_locations[1, j]],
-                         'gray', linewidth=1, zorder=1, alpha=0.2)
-    
+                plt.plot([sensor_locations[0, i], sensor_locations[0, j]],
+                         [sensor_locations[1, i], sensor_locations[1, j]],
+                         'black', linewidth=1, zorder=1, alpha=0.2)
+             
+    # Plot the sensors
+    norm = plt.Normalize(Z.min(), Z.max())
+    for i in range(num_sensors):
+        plt.scatter(sensor_locations[0, i], sensor_locations[1, i], marker = 'o', s = 70, c=sensor_values[i], cmap='plasma', norm=norm, edgecolors='black', linewidths=0.5)
+
+    plt.xlabel("X Position")
+    plt.ylabel("Y Position")
+
+    divider = make_axes_locatable(plt.gca())
+    cax = divider.append_axes("right", size="8%", pad=0.2)
+    plt.colorbar(field_plot, label='Temperature (Celsius)', location="right", cax=cax)
+
     plt.axis("equal")
     plt.show()
