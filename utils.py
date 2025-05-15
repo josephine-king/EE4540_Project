@@ -95,3 +95,6 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 
     plt.axis("equal")
     plt.show()
+
+def calculate_error(x_pred, x_true):
+    return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
