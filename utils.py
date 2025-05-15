@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-
 # Given a communication range, field size, and dimension d, calculates 
 # the number of sensors such that the graph is connected with probability 1 - n^2
 def calculate_num_sensors(communication_range, field_size, d):
@@ -72,7 +71,7 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     X1, X2 = np.meshgrid(x1_vals, x2_vals)
     Z = np.array([[field_function(x1, x2) for x1, x2 in zip(row_x1, row_x2)]
               for row_x1, row_x2 in zip(X1, X2)])
-    field_plot = plt.contourf(X1, X2, Z, levels=100, cmap='plasma', alpha=0.5, antialiased=True)
+    field_plot = plt.contourf(X1, X2, Z, levels=100, cmap='plasma', alpha=0.7, antialiased=True)
 
     # Plot edges
     for i in range(num_sensors):
