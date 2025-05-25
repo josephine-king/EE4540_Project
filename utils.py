@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Given a communication range, field size, and dimension d, calculates 
-# the number of sensors such that the graph is connected with probability 1 - n^2
+# the number of sensors (n) such that the graph is connected with probability 1 - 1 / n^2
 def calculate_num_sensors(communication_range, field_size, d):
     norm_comm_range = communication_range / field_size
     num_sensors = 2
@@ -24,7 +24,7 @@ def calculate_graph_matrices(sensor_locations, communication_range):
             distance = np.linalg.norm(sensor_locations[:,i] - sensor_locations[:,j])
             if distance <= communication_range:
                 adjacency_matrix[i,j] = 1
-                adjacency_matrix[j,i] = 1   
+                # adjacency_matrix[j,i] = 1
 
     degree_matrix = np.diag(np.sum(adjacency_matrix, axis=1))
     laplacian_matrix = degree_matrix - adjacency_matrix
@@ -35,8 +35,8 @@ def calculate_graph_matrices(sensor_locations, communication_range):
 # Calculates the eigenvalues of the Laplacian matrix to determine if the graph is connected
 def is_graph_connected(laplacian_matrix):
     eigenvalues = np.linalg.eigvalsh(laplacian_matrix)
-    zero_eigenvalues = np.sum(np.isclose(eigenvalues, 0))
-    return zero_eigenvalues == 1
+    n_zero_eigenvalues = np.sum(np.isclose(eigenvalues, 0))
+    return n_zero_eigenvalues == 1
 
 def get_field_function():
     params_x = np.random.uniform(-1e-5, 1e-5, 3)
@@ -49,6 +49,8 @@ def get_field_function():
     return field_function
 
 def get_sensor_measurements(sensor_locations, field_function, noise_std):
+    # vectorize: func(x, y)     ->      func([x], [y])
+    #            f(x,y) = v     ->      f([x], [y]) -> [v]
     vectorized_func = np.vectorize(field_function)
     measurements = vectorized_func(sensor_locations[0, :], sensor_locations[1, :])
     noise = np.random.normal(0, noise_std, size=measurements.shape)
@@ -61,9 +63,8 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     Visualizes the underlying graph
     """
     num_sensors = sensor_locations.shape[1]
-    colors = plt.cm.get_cmap("tab10", num_sensors)  # Use a colormap with N unique colors
-
-    fig = plt.figure(figsize=(6, 6))
+    # colors = plt.cm.get_cmap("tab10", num_sensors)  # Use a colormap with N unique colors
+    # fig = plt.figure(figsize=(6, 6))
 
     # Plot the field values
     x1_vals = np.linspace(0, 100, 100)
