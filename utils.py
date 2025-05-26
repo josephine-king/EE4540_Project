@@ -63,8 +63,6 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     Visualizes the underlying graph
     """
     num_sensors = sensor_locations.shape[1]
-    # colors = plt.cm.get_cmap("tab10", num_sensors)  # Use a colormap with N unique colors
-    # fig = plt.figure(figsize=(6, 6))
 
     # Plot the field values
     x1_vals = np.linspace(0, 100, 100)
