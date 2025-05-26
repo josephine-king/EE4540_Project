@@ -99,3 +99,18 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 
 def calculate_error(x_pred, x_true):
     return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
+
+# Get W_bar to check optimality of the improved algorithm
+def get_W_bar(P, adjacency_matrix):
+    n = adjacency_matrix.shape[0]
+    W_bar = np.zeros_like(adjacency_matrix, dtype='float64')
+
+    for i in range(0, n):
+        for j in range(0, n):
+            if (adjacency_matrix[i, j] > 0):
+                e_i = np.zeros((n, 1)); e_i[i] = 1
+                e_j = np.zeros((n, 1)); e_j[j] = 1
+                W_ij = np.eye(n) - 0.5 * (e_i - e_j) @ (e_i - e_j).T
+                W_bar += P[i, j] * W_ij
+    
+    return W_bar / n
