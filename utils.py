@@ -53,6 +53,7 @@ def get_sensor_measurements(sensor_locations, field_function, noise_std):
     #            f(x,y) = v     ->      f([x], [y]) -> [v]
     vectorized_func = np.vectorize(field_function)
     measurements = vectorized_func(sensor_locations[0, :], sensor_locations[1, :])
+    # draw measurements from standard Gaussian dist
     noise = np.random.normal(0, noise_std, size=measurements.shape)
     return measurements + noise
 
@@ -83,7 +84,8 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     # Plot the sensors
     norm = plt.Normalize(Z.min(), Z.max())
     for i in range(num_sensors):
-        plt.scatter(sensor_locations[0, i], sensor_locations[1, i], marker = 'o', s = 70, c=sensor_values[i], cmap='plasma', norm=norm, edgecolors='black', linewidths=0.5)
+        plt.scatter(sensor_locations[0, i], sensor_locations[1, i], marker = 'o', s = 130, c=sensor_values[i], cmap='plasma', norm=norm, edgecolors='black', linewidths=0.5)
+        plt.annotate(f'{i}', xy=(sensor_locations[0, i], sensor_locations[1, i]), fontsize=6, horizontalalignment='center', verticalalignment='center')
 
     plt.xlabel("X Position")
     plt.ylabel("Y Position")
