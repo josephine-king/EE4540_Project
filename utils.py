@@ -66,6 +66,7 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     """
     num_sensors = sensor_locations.shape[1]
 
+    plt.rc('axes', labelsize=16)
     fig = plt.figure(figsize=(7,7))
 
     # Plot the field values
@@ -90,10 +91,8 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
         plt.scatter(sensor_locations[0, i], sensor_locations[1, i], marker = 'o', s = 130, c=sensor_values[i], cmap='plasma', norm=norm, edgecolors='black', linewidths=0.5)
         #plt.annotate(f'{i}', xy=(sensor_locations[0, i], sensor_locations[1, i]), fontsize=6, horizontalalignment='center', verticalalignment='center')
 
-    plt.rc('axes', labelsize=16)
     plt.xlabel("X Position (meters)")
     plt.ylabel("Y Position (meters)")
-    plt.rcParams['figure.dpi'] = 600
     plt.rcParams['savefig.dpi'] = 600
 
     divider = make_axes_locatable(plt.gca())
@@ -107,17 +106,3 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 def calculate_error(x_pred, x_true):
     return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
 
-# Get W_bar to check optimality of the improved algorithm
-def get_W_bar(P, adjacency_matrix):
-    n = adjacency_matrix.shape[0]
-    W_bar = np.zeros_like(adjacency_matrix, dtype='float64')
-
-    for i in range(0, n):
-        for j in range(0, n):
-            if (adjacency_matrix[i, j] > 0):
-                e_i = np.zeros((n, 1)); e_i[i] = 1
-                e_j = np.zeros((n, 1)); e_j[j] = 1
-                W_ij = np.eye(n) - 0.5 * (e_i - e_j) @ (e_i - e_j).T
-                W_bar += P[i, j] * W_ij
-    
-    return W_bar / n
