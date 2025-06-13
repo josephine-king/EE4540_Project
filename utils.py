@@ -39,6 +39,7 @@ def is_graph_connected(laplacian_matrix):
     return n_zero_eigenvalues == 1
 
 def get_field_function():
+    np.random.seed(0)
     params_x = np.random.uniform(-1e-5, 1e-5, 3)
     params_y = np.random.uniform(-2e-5, 2e-5, 3)
     bias = np.random.uniform(18, 25)
@@ -65,6 +66,8 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     """
     num_sensors = sensor_locations.shape[1]
 
+    fig = plt.figure(figsize=(7,7))
+
     # Plot the field values
     x1_vals = np.linspace(0, 100, 100)
     x2_vals = np.linspace(0, 100, 100)
@@ -85,10 +88,13 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     norm = plt.Normalize(Z.min(), Z.max())
     for i in range(num_sensors):
         plt.scatter(sensor_locations[0, i], sensor_locations[1, i], marker = 'o', s = 130, c=sensor_values[i], cmap='plasma', norm=norm, edgecolors='black', linewidths=0.5)
-        plt.annotate(f'{i}', xy=(sensor_locations[0, i], sensor_locations[1, i]), fontsize=6, horizontalalignment='center', verticalalignment='center')
+        #plt.annotate(f'{i}', xy=(sensor_locations[0, i], sensor_locations[1, i]), fontsize=6, horizontalalignment='center', verticalalignment='center')
 
-    plt.xlabel("X Position")
-    plt.ylabel("Y Position")
+    plt.rc('axes', labelsize=16)
+    plt.xlabel("X Position (meters)")
+    plt.ylabel("Y Position (meters)")
+    plt.rcParams['figure.dpi'] = 600
+    plt.rcParams['savefig.dpi'] = 600
 
     divider = make_axes_locatable(plt.gca())
     cax = divider.append_axes("right", size="8%", pad=0.2)
@@ -96,6 +102,7 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 
     plt.axis("equal")
     plt.show()
+    fig.savefig("figures/graph.png", bbox_inches='tight')
 
 def calculate_error(x_pred, x_true):
     return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
