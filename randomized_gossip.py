@@ -77,7 +77,7 @@ def get_p_matrix(adjacency_matrix):
     return np.round(P, 4)
 
 # Implements the randomized gossip algorithm for the specified number of iterations
-def randomized_gossip(adjacency_matrix, sensor_measurements, P, num_iter = 50000, transmission_loss = 0):
+def randomized_gossip(adjacency_matrix, sensor_measurements, P, num_iter = 50000, transmission_loss = 0, calculate_Wk = False):
     num_sensors = adjacency_matrix.shape[0]
     true_average = np.mean(sensor_measurements) * np.ones(num_sensors)
     est_average = sensor_measurements.copy()
@@ -85,6 +85,8 @@ def randomized_gossip(adjacency_matrix, sensor_measurements, P, num_iter = 50000
     error_val = calculate_error(est_average, true_average)
     iter  = 0
     error_vals = [error_val]
+
+    Wk = np.identity(num_sensors)
 
     transmission = 0
     transmissions = [transmission]
@@ -106,6 +108,18 @@ def randomized_gossip(adjacency_matrix, sensor_measurements, P, num_iter = 50000
             est_average[i] = average_val
         if (lost2 == 0):
             est_average[j] = average_val
+
+        # Calculate the true W_k
+        if (calculate_Wk):
+            Wk_iter = np.eye(num_sensors)
+            if (lost1 == 0):
+                Wk_iter[i, i] = 0.5
+                Wk_iter[i, j] = 0.5
+            if (lost2 == 0):
+                Wk_iter[j, j] = 0.5
+                Wk_iter[j, i] = 0.5
+            Wk = Wk @ Wk_iter
+
         # Update # of transmissions - both i and j transmit their values
         transmission += 2
         # Calculate the error
@@ -113,5 +127,8 @@ def randomized_gossip(adjacency_matrix, sensor_measurements, P, num_iter = 50000
         error_vals.append(error_val)
         transmissions.append(transmission)
         iter += 1
-
-    return error_vals, transmissions, est_average
+    
+    # Get the error between the true and desired W^k
+    Wk_err_norm = np.linalg.norm(Wk - np.ones((num_sensors, num_sensors))/num_sensors)
+    
+    return error_vals, transmissions, est_average, Wk_err_norm

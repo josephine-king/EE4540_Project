@@ -39,7 +39,7 @@ def is_graph_connected(laplacian_matrix):
     return n_zero_eigenvalues == 1
 
 def get_field_function():
-    np.random.seed(0)
+    np.random.seed(10)
     params_x = np.random.uniform(-1e-5, 1e-5, 3)
     params_y = np.random.uniform(-2e-5, 2e-5, 3)
     bias = np.random.uniform(18, 25)
@@ -106,3 +106,26 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 def calculate_error(x_pred, x_true):
     return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
 
+def make_tl_plots(error_vals, transmissions, title, filename):
+    labels = ["No", "25%", "50%", "75%"]
+    fig = plt.figure()
+    for i in range(len(transmissions)):
+        plt.semilogy(transmissions[i], error_vals[i], label=labels[i] + " Transmission Loss")
+    plt.grid(True)
+    plt.xlabel("Transmissions")
+    plt.ylabel(r"Normalized Error: $\frac{\|\mathbf{x}_{\mathrm{est}} - \mathbf{x}_{\mathrm{true}}\|_2}{\|\mathbf{x}_{\mathrm{true}}\|_2}$")
+    plt.title(title)
+    plt.legend()
+    fig.savefig("figures/" + filename + ".png", bbox_inches='tight')
+
+def make_async_plots(error_vals, transmissions, title, filename):
+    labels = ["100%", "25%", "50%", "75%"]
+    fig = plt.figure()
+    for i in range(len(transmissions)):
+        plt.semilogy(transmissions[i], error_vals[i], label=labels[i] + " Active Nodes")
+    plt.grid(True)
+    plt.xlabel("Transmissions")
+    plt.ylabel(r"Normalized Error: $\frac{\|\mathbf{x}_{\mathrm{est}} - \mathbf{x}_{\mathrm{true}}\|_2}{\|\mathbf{x}_{\mathrm{true}}\|_2}$")
+    plt.title(title)
+    plt.legend()
+    fig.savefig("figures/" + filename + ".png", bbox_inches='tight')

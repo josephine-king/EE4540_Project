@@ -16,8 +16,7 @@ def pdmm_average(adjacency_matrix, sensor_measurements, c, broadcast = False, nu
     for i in range(n):
         for j in range(n):
             if adjacency_matrix[i, j] > 0:
-                # TODO: not sure how to initialize z
-                z[(i, j)] = sensor_measurements[i]
+                z[(i, j)] = np.random.normal(sensor_measurements[i], 1)
 
     iter = 0
     transmission = 0
@@ -94,7 +93,7 @@ def pdmm_median(adjacency_matrix, sensor_measurements, c, broadcast = False, num
     for i in range(n):
         for j in range(n):
             if adjacency_matrix[i, j] > 0:
-                z[(i, j)] = sensor_measurements[i]
+                z[(i, j)] = np.random.normal(sensor_measurements[i], 1)
 
     iter = 0
     transmission = 0
