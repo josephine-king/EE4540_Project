@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import calculate_error
+from utils import calculate_error, calculate_error_median
 
 # PDMM average consensus algorithm
-def pdmm_average(adjacency_matrix, sensor_measurements, c, broadcast = False, num_iter = 5000, active_nodes = 1, transmission_loss = 0):
+def pdmm_average(adjacency_matrix, sensor_measurements, c, broadcast = False, num_iter = 5000, err = 1e-14, active_nodes = 1, transmission_loss = 0):
     
     n = adjacency_matrix.shape[0]
     # Initialize variables
@@ -22,7 +22,7 @@ def pdmm_average(adjacency_matrix, sensor_measurements, c, broadcast = False, nu
                 z[(i, j)] = 0
                 y[(i, j)] = 0
 
-    while iter < num_iter and error_val > 1e-14:
+    while iter < num_iter and error_val > err:
         # Store the previous values of y
         y_prev = y.copy()
 
@@ -92,8 +92,17 @@ def pdmm_median(adjacency_matrix, sensor_measurements, c, broadcast = False, num
     transmission = 0
     transmissions = [transmission]
     x = sensor_measurements.copy()
-    x_true = np.median(sensor_measurements) * np.ones(n)
-    error_val = calculate_error(x, x_true)
+    # For even number of nodes, the median can take on a range of values
+    if (n % 2 == 0):
+        sorted_measurements = sensor_measurements.copy()
+        sorted_measurements.sort()
+        x_true_min = sorted_measurements[int(n/2)-1] * np.ones(n)
+        x_true_max = sorted_measurements[int(n/2)] * np.ones(n)
+    # For odd number of nodes, the median is a single value
+    else:
+        x_true_min = np.median(sensor_measurements) * np.ones(n)
+        x_true_max = x_true_min.copy()
+    error_val = calculate_error_median(x, x_true_min, x_true_max)
     error_vals = [error_val]
     y = {}
     z = {}
@@ -174,7 +183,7 @@ def pdmm_median(adjacency_matrix, sensor_measurements, c, broadcast = False, num
                 transmission += 1
 
         # Calculate error
-        error_val = calculate_error(x, x_true)
+        error_val = calculate_error_median(x, x_true_min, x_true_max)
         error_vals.append(error_val)
         transmissions.append(transmission)
 

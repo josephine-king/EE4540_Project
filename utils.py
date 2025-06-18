@@ -106,6 +106,14 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
 def calculate_error(x_pred, x_true):
     return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
 
+def calculate_error_median(x_pred, x_true_min, x_true_max):
+    if x_true_min[0] == x_true_max[0]:
+        return calculate_error(x_pred, x_true_min)
+    else:
+        inside_bounds = (x_pred >= x_true_min) & (x_pred <= x_true_max)
+        err = np.where(inside_bounds, 0, np.minimum(np.abs(x_pred - x_true_min), np.abs(x_pred - x_true_max)))
+        return np.linalg.norm(err)/np.linalg.norm(0.5*(x_true_min + x_true_max))
+
 def make_tl_plots(error_vals, transmissions, title, filename):
     labels = ["No", "25%", "50%", "75%"]
     fig = plt.figure()
