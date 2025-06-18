@@ -24,7 +24,6 @@ def calculate_graph_matrices(sensor_locations, communication_range):
             distance = np.linalg.norm(sensor_locations[:,i] - sensor_locations[:,j])
             if distance <= communication_range:
                 adjacency_matrix[i,j] = 1
-                # adjacency_matrix[j,i] = 1
 
     degree_matrix = np.diag(np.sum(adjacency_matrix, axis=1))
     laplacian_matrix = degree_matrix - adjacency_matrix
@@ -104,7 +103,7 @@ def visualize_graphs(sensor_locations, adjacency_matrix, field_function, sensor_
     fig.savefig("figures/graph.png", bbox_inches='tight')
 
 def calculate_error(x_pred, x_true):
-    return np.linalg.norm(x_pred - x_true)/np.linalg.norm(x_true)
+    return np.linalg.norm(x_pred - x_true)/x_true[0]
 
 def calculate_error_median(x_pred, x_true_min, x_true_max):
     if x_true_min[0] == x_true_max[0]:
@@ -112,7 +111,7 @@ def calculate_error_median(x_pred, x_true_min, x_true_max):
     else:
         inside_bounds = (x_pred >= x_true_min) & (x_pred <= x_true_max)
         err = np.where(inside_bounds, 0, np.minimum(np.abs(x_pred - x_true_min), np.abs(x_pred - x_true_max)))
-        return np.linalg.norm(err)/np.linalg.norm(0.5*(x_true_min + x_true_max))
+        return np.linalg.norm(err)/(0.5*(x_true_min[0] + x_true_max[0]))
 
 def make_tl_plots(error_vals, transmissions, title, filename):
     labels = ["No", "25%", "50%", "75%"]
@@ -121,7 +120,7 @@ def make_tl_plots(error_vals, transmissions, title, filename):
         plt.semilogy(transmissions[i], error_vals[i], label=labels[i] + " Transmission Loss")
     plt.grid(True)
     plt.xlabel("Transmissions")
-    plt.ylabel(r"Normalized Error: $\frac{\|\mathbf{x}_{\mathrm{est}} - \mathbf{x}_{\mathrm{true}}\|_2}{\|\mathbf{x}_{\mathrm{true}}\|_2}$")
+    plt.ylabel("Normalized Error")
     plt.title(title)
     plt.legend()
     fig.savefig("figures/" + filename + ".png", bbox_inches='tight')
@@ -133,7 +132,7 @@ def make_async_plots(error_vals, transmissions, title, filename):
         plt.semilogy(transmissions[i], error_vals[i], label=labels[i] + " Active Nodes")
     plt.grid(True)
     plt.xlabel("Transmissions")
-    plt.ylabel(r"Normalized Error: $\frac{\|\mathbf{x}_{\mathrm{est}} - \mathbf{x}_{\mathrm{true}}\|_2}{\|\mathbf{x}_{\mathrm{true}}\|_2}$")
+    plt.ylabel("Normalized Error")
     plt.title(title)
     plt.legend()
     fig.savefig("figures/" + filename + ".png", bbox_inches='tight')
